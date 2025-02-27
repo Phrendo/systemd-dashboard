@@ -39,6 +39,7 @@ def status():
     print("SERVICES SENT TO UI:", services)  # Debugging
 
     return render_template_string(
+        "<tbody id='service-list'>"
         "{% for service in services %}"
         "<tr id='service-{{ service.id }}'>"
         "    <td>{{ service.name }}</td>"
@@ -49,9 +50,11 @@ def status():
         "                hx-swap='outerHTML'>❌ Remove</button>"
         "    </td>"
         "</tr>"
-        "{% endfor %}",
+        "{% endfor %}"
+        "</tbody>",
         services=services
     )
+
 
 
 
