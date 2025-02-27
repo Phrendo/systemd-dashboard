@@ -29,14 +29,16 @@ from flask import render_template_string  # Import for inline template rendering
 @app.route("/status")
 def status():
     services = Service.query.all()
-    
+
     # Update service statuses
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
 
-    response = make_response(render_template_string(
+    print("SERVICES SENT TO UI:", services)  # Debugging
+
+    return render_template_string(
         "{% for service in services %}"
         "<tr id='service-{{ service.id }}'>"
         "    <td>{{ service.name }}</td>"
@@ -49,12 +51,8 @@ def status():
         "</tr>"
         "{% endfor %}",
         services=services
-    ))
-    
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
-    return response
+    )
+
 
 
 
