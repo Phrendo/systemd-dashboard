@@ -1,6 +1,6 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Service
 
@@ -24,18 +24,34 @@ def index():
     services = Service.query.all()
     return render_template("index.html", services=services)
 
+from flask import render_template_string  # Import for inline template rendering
+
 @app.route("/status")
 def status():
-    """Return service statuses as JSON."""
     services = Service.query.all()
-    data = []
+    
+    # Update statuses before returning
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
+    db.session.commit()
 
-        db.session.commit()
-        data.append({"id": service.id, "name": service.name, "status": service.status})
-    return jsonify(data)
+    return render_template_string(
+        "{% for service in services %}"
+        "<tr>"
+        "    <td>{{ service.name }}</td>"
+        "    <td class='{{ service.status }}'>{{ service.status }}</td>"
+        "    <td>"
+        "        <button hx-delete='/delete_service/{{ service.id }}' "
+        "                hx-target='#service-{{ service.id }}' "
+        "                hx-swap='outerHTML'>❌ Remove</button>"
+        "    </td>"
+        "</tr>"
+        "{% endfor %}",
+        services=services
+    )
+
+
 
 @app.route("/add_service", methods=["POST"])
 def add_service():
