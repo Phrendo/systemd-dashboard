@@ -1,6 +1,6 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify, render_template_string
+from flask import Flask, render_template, request, jsonify, render_template_string, make_response
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Service
 
@@ -30,15 +30,15 @@ from flask import render_template_string  # Import for inline template rendering
 def status():
     services = Service.query.all()
     
-    # Update statuses before returning
+    # Update service statuses
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
 
-    return render_template_string(
+    response = make_response(render_template_string(
         "{% for service in services %}"
-        "<tr>"
+        "<tr id='service-{{ service.id }}'>"
         "    <td>{{ service.name }}</td>"
         "    <td class='{{ service.status }}'>{{ service.status }}</td>"
         "    <td>"
@@ -49,7 +49,12 @@ def status():
         "</tr>"
         "{% endfor %}",
         services=services
-    )
+    ))
+    
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 

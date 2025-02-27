@@ -55,7 +55,7 @@
 
     <table>
         <tr><th>Service</th><th>Status</th><th>Action</th></tr>
-        <tbody id="service-list" hx-get="/status" hx-trigger="every 5s" hx-swap="innerHTML">
+        <tbody id="service-list" hx-get="/status" hx-trigger="every 5s" hx-swap="outerHTML">
             {% for service in services %}
             <tr id="service-{{ service.id }}">
                 <td>{{ service.name }}</td>
