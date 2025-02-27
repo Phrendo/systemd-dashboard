@@ -50,25 +50,10 @@
           });
     });
     </script>
-    
-    
 
     <table>
         <tr><th>Service</th><th>Status</th><th>Action</th></tr>
         <tbody id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
-        </tbody>
-             
-            {% for service in services %}
-            <tr id="service-{{ service.id }}">
-                <td>{{ service.name }}</td>
-                <td class="{{ service.status }}">{{ service.status }}</td>
-                <td>
-                    <button hx-delete="/delete_service/{{ service.id }}" 
-                            hx-target="#service-{{ service.id }}" 
-                            hx-swap="outerHTML">❌ Remove</button>
-                </td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
 </body>
