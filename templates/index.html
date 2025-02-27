@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        table { width: 60%; margin: auto; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid black; }
+        .running { color: green; }
+        .failed { color: red; }
+        .inactive { color: gray; }
+        .error { color: orange; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Service Dashboard</h1>
+
+    <!-- Add Service Form -->
+    <form id="add-service-form">
+        <input type="text" id="service-name" placeholder="Service Name" required>
+        <input type="text" id="service-description" placeholder="Description">
+        <button type="submit">Add Service</button>
+    </form>
+    
+    <script>
+    document.getElementById("add-service-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // Prevent normal form submission
+    
+        let serviceName = document.getElementById("service-name").value;
+        let serviceDescription = document.getElementById("service-description").value;
+    
+        fetch("/add_service", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: serviceName,
+                description: serviceDescription
+            })
+        }).then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  location.reload();  // Reload to reflect new service
+              } else {
+                  alert("Error: " + data.error);
+              }
+          });
+    });
+    </script>
+    
+    
+
+    <table>
+        <tr><th>Service</th><th>Status</th><th>Action</th></tr>
+        <tbody id="service-list" hx-get="/status" hx-trigger="every 5s" hx-swap="innerHTML">
+            {% for service in services %}
+            <tr id="service-{{ service.id }}">
+                <td>{{ service.name }}</td>
+                <td class="{{ service.status }}">{{ service.status }}</td>
+                <td>
+                    <button hx-delete="/delete_service/{{ service.id }}" 
+                            hx-target="#service-{{ service.id }}" 
+                            hx-swap="outerHTML">❌ Remove</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
