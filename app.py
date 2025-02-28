@@ -91,14 +91,19 @@ def stream_logs():
         stderr=subprocess.PIPE,
         text=True
     )
-    
-    for line in iter(process.stdout.readline, ""):
-        yield f"data: {line.strip()}\n\n"
+
+    try:
+        for line in iter(process.stdout.readline, ""):
+            yield f"data: {line.strip()}\n\n"
+    except GeneratorExit:
+        process.terminate()
+
 
 @app.route("/logs")
 def logs():
     """Flask route that streams logs to the frontend using Server-Sent Events (SSE)."""
-    return Response(stream_logs(), mimetype="text/event-stream")
+    return Response(stream_logs(), mimetype="text/event-stream"), {"Cache-Control": "no-cache"}
+
 
 if __name__ == "__main__":
     with app.app_context():

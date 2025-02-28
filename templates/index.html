@@ -62,11 +62,18 @@
     
     <script>
         const logOutput = document.getElementById("log-output");
-    
+
         const eventSource = new EventSource("/logs");
+
         eventSource.onmessage = function(event) {
-            logOutput.innerHTML += event.data + "\n";
-            logOutput.scrollTop = logOutput.scrollHeight;  // Auto-scroll to latest logs
+            if (event.data.trim() !== "") {  // Prevent empty messages
+                logOutput.innerHTML += event.data + "\n";
+                logOutput.scrollTop = logOutput.scrollHeight;  // Auto-scroll to latest logs
+            }
+        };
+
+        eventSource.onerror = function() {
+            console.error("Error connecting to logs stream.");
         };
     </script>
     
