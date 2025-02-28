@@ -56,5 +56,19 @@
         <tbody id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
         </tbody>
     </table>
+
+    <h2>Service Logs (schwab_tokens.service)</h2>
+    <pre id="log-output" style="background-color: black; color: white; padding: 10px; height: 300px; overflow-y: scroll; text-align: left;"></pre>
+    
+    <script>
+        const logOutput = document.getElementById("log-output");
+    
+        const eventSource = new EventSource("/logs");
+        eventSource.onmessage = function(event) {
+            logOutput.innerHTML += event.data + "\n";
+            logOutput.scrollTop = logOutput.scrollHeight;  // Auto-scroll to latest logs
+        };
+    </script>
+    
 </body>
 </html>

@@ -98,3 +98,20 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()  # Ensure database is initialized
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+def stream_logs():
+    """Generator function to stream logs from journalctl."""
+    process = subprocess.Popen(
+        ["journalctl", "-u", "schwab_tokens.service", "--output=cat", "-f"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    
+    for line in iter(process.stdout.readline, ""):
+        yield f"data: {line.strip()}\n\n"
+
+@app.route("/logs")
+def logs():
+    """Flask route that streams logs to the frontend using Server-Sent Events (SSE)."""
+    return Response(stream_logs(), mimetype="text/event-stream")
