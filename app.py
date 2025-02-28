@@ -1,9 +1,8 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify, render_template_string, make_response
+from flask import Flask, render_template, request, jsonify, render_template_string, make_response, Response
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Service
-# lets go
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///services.db'
@@ -24,19 +23,14 @@ def index():
     services = Service.query.all()
     return render_template("index.html", services=services)
 
-from flask import render_template_string  # Import for inline template rendering
-
 @app.route("/status")
 def status():
+    """Update service statuses and return them to the frontend."""
     services = Service.query.all()
-
-    # Update service statuses
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
-
-    print("SERVICES SENT TO UI:", services)  # Debugging
 
     return render_template_string(
         "<tbody id='service-list'>"
@@ -55,15 +49,11 @@ def status():
         services=services
     )
 
-
-
-
-
 @app.route("/add_service", methods=["POST"])
 def add_service():
     """Add a new service from the GUI."""
     try:
-        data = request.get_json()  # Ensure JSON is parsed
+        data = request.get_json()
         if not data or "name" not in data:
             return jsonify({"error": "Invalid request"}), 400
 
@@ -82,7 +72,6 @@ def add_service():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
 @app.route("/delete_service/<int:service_id>", methods=["DELETE"])
 def delete_service(service_id):
     """Remove a service from the database."""
@@ -93,11 +82,6 @@ def delete_service(service_id):
     db.session.delete(service)
     db.session.commit()
     return jsonify({"success": True})
-    
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()  # Ensure database is initialized
-    app.run(host="0.0.0.0", port=5000, debug=True)
 
 def stream_logs():
     """Generator function to stream logs from journalctl."""
@@ -115,3 +99,8 @@ def stream_logs():
 def logs():
     """Flask route that streams logs to the frontend using Server-Sent Events (SSE)."""
     return Response(stream_logs(), mimetype="text/event-stream")
+
+if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()  # Ensure database is initialized
+    app.run(host="0.0.0.0", port=5000, debug=True)
