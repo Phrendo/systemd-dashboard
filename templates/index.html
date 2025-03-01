@@ -31,8 +31,8 @@
 
         button { margin: 5px; }
 
-        /* LOG STYLING */
-        .log-panel {
+        /* LOGS STYLE (No Panel) */
+        .log-output {
             width: 95%;
             margin: 10px auto;
             background-color: black;
@@ -41,30 +41,10 @@
             border-radius: 5px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
             text-align: left;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .log-panel h3 {
-            margin: 0;
-            font-size: 18px;
-            background-color: #222;
-            padding: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .log-output {
-            flex-grow: 1;
-            max-height: 250px;
-            overflow-y: auto; /* ✅ This is the only scrollable area */
             font-family: monospace;
             white-space: pre-wrap;
-            background-color: black;
-            padding: 5px;
-            border-top: 1px solid #444;
-            margin: 0;
+            max-height: 250px;
+            overflow-y: auto; /* ✅ Only logs scroll */
             scrollbar-width: thin;
         }
     </style>
@@ -121,8 +101,6 @@
     <h2>Service Logs</h2>
     <div id="log-panels">
         {% for service in services %}
-        <div class="log-panel">
-            <h3>{{ service.name }}</h3>
             <pre id="log-output-{{ service.name }}"
                 class="log-output"
                 hx-get="/logs/{{ service.name }}"
@@ -130,7 +108,6 @@
                 hx-target="#log-output-{{ service.name }}"
                 hx-swap="innerHTML">
             </pre>
-        </div>
         {% endfor %}
     </div>
 
