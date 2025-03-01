@@ -46,6 +46,16 @@
               }
           });
     });
+
+    function autoScrollLogs() {
+        document.querySelectorAll('.log-output').forEach(logOutput => {
+            logOutput.scrollTop = logOutput.scrollHeight;
+        });
+    }
+    
+    document.addEventListener("htmx:afterSwap", function(event) {
+        autoScrollLogs();
+    });
     </script>
 
     <table>
@@ -64,8 +74,9 @@
                 hx-get="/logs/{{ service.name }}"
                 hx-trigger="every 5s"
                 hx-target="#log-output-{{ service.name }}"
-                hx-swap="outerHTML">
+                hx-swap="innerHTML">
             </pre>
+            
 
         </div>
         {% endfor %}
