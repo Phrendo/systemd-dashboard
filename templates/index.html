@@ -60,6 +60,10 @@
     <h2>Service Logs</h2>
     <div id="log-panels">
         <div class="log-panel">
+            <h3>mssql-server</h3>
+            <pre id="log-output-mssql-server" class="log-output"></pre>
+        </div>
+        <div class="log-panel">
             <h3>schwab_tokens.service</h3>
             <pre id="log-output-schwab_tokens" class="log-output"></pre>
         </div>
@@ -89,6 +93,7 @@
         // Start streaming logs for each service
         startLogStream("schwab_tokens");
         startLogStream("tt_main");
+        startLogStream("mssql-server");
     </script>
     
     <style>
