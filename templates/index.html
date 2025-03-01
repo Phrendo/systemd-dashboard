@@ -6,11 +6,15 @@
     <title>Service Dashboard</title>
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <style>
+        /* Global Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
+            overflow-y: auto; /* ✅ Ensures only body scrolls when necessary */
         }
 
         table {
@@ -31,7 +35,7 @@
 
         button { margin: 5px; }
 
-        /* LOGS STYLE (No Panel) */
+        /* LOG OUTPUT */
         .log-output {
             width: 95%;
             margin: 10px auto;
@@ -43,8 +47,8 @@
             text-align: left;
             font-family: monospace;
             white-space: pre-wrap;
-            max-height: 250px;
-            overflow-y: auto; /* ✅ Only logs scroll */
+            height: 250px;
+            overflow-y: auto; /* ✅ Only this scrolls */
             scrollbar-width: thin;
         }
     </style>
@@ -99,17 +103,16 @@
     </table>
 
     <h2>Service Logs</h2>
-    <div id="log-panels">
-        {% for service in services %}
-            <pre id="log-output-{{ service.name }}"
-                class="log-output"
-                hx-get="/logs/{{ service.name }}"
-                hx-trigger="every 5s"
-                hx-target="#log-output-{{ service.name }}"
-                hx-swap="innerHTML">
-            </pre>
-        {% endfor %}
-    </div>
+
+    {% for service in services %}
+        <pre id="log-output-{{ service.name }}"
+            class="log-output"
+            hx-get="/logs/{{ service.name }}"
+            hx-trigger="every 5s"
+            hx-target="#log-output-{{ service.name }}"
+            hx-swap="innerHTML">
+        </pre>
+    {% endfor %}
 
 </body>
 </html>
