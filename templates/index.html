@@ -98,23 +98,37 @@
     
     <style>
         .log-panel {
-            width: 95%; /* Full width */
-            margin: 10px auto; /* Center the panels */
+            width: 95%;
+            margin: 10px auto;
             background-color: black;
             color: white;
             padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
-            text-align: left;
             border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); /* Slight shadow for better visibility */
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            text-align: left;
         }
+
+        .log-panel h3 {
+            margin: 0;
+            padding-bottom: 5px;
+            font-size: 18px;
+            background-color: #222; /* Darker background to differentiate */
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
         .log-output {
             height: 250px;
-            overflow-y: scroll;
+            overflow-y: auto; /* Logs scroll independently */
             font-family: monospace;
             white-space: pre-wrap;
+            background-color: black;
+            padding: 5px;
+            border-top: 1px solid #444;
         }
+
 
     </style>
     
