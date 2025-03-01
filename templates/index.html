@@ -123,13 +123,12 @@
     {% for service in services %}
         <div class="log-container">
             <div class="log-title">{{ service.name }}</div>
-            <pre id="log-output-{{ service.name }}"
-                class="log-output"
-                hx-get="/logs/{{ service.name }}"
-                hx-trigger="every 5s"
-                hx-target="#log-output-{{ service.name }}"
-                hx-swap="innerHTML">
-            </pre>
+            <pre id="log-output-schwab_tokens" class="log-output" 
+            hx-get="/logs/schwab_tokens" 
+            hx-trigger="every 5s" 
+            hx-target="#log-output-schwab_tokens" 
+            hx-swap="innerHTML">
+        </pre>
         </div>
     {% endfor %}
 

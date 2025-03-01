@@ -85,13 +85,16 @@ def delete_service(service_id):
 
 @app.route("/logs/<service_name>")
 def logs(service_name):
-    """Fetch the latest logs for a given service (polling-based)."""
-    logs = fetch_logs(service_name)
-    return render_template_string(
-        "<pre id='log-output-{{ service_name }}' class='log-output'>{{ logs }}</pre>",
-        service_name=service_name,
-        logs=logs
+    """Return logs as plain text for HTMX to insert directly."""
+    process = subprocess.Popen(
+        ["journalctl", "-u", service_name, "--output=cat", "-n", "50"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
     )
+    logs, _ = process.communicate()
+    return logs, 200, {"Content-Type": "text/plain"}
+
 
 def fetch_logs(service_name):
     """Fetch the last 20 logs from journalctl for a given service."""
