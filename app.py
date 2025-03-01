@@ -83,10 +83,15 @@ def delete_service(service_id):
     db.session.commit()
     return jsonify({"success": True})
 
-def stream_logs():
-    """Generator function to stream logs from journalctl."""
+@app.route("/logs/<service_name>")
+def logs(service_name):
+    """Stream logs for a specific service."""
+    return Response(stream_logs(service_name), mimetype="text/event-stream"), {"Cache-Control": "no-cache"}
+
+def stream_logs(service_name):
+    """Generator function to stream logs from journalctl for a given service."""
     process = subprocess.Popen(
-        ["journalctl", "-u", "schwab_tokens.service", "--output=cat", "-f"],
+        ["journalctl", "-u", service_name, "--output=cat", "-f"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -97,12 +102,6 @@ def stream_logs():
             yield f"data: {line.strip()}\n\n"
     except GeneratorExit:
         process.terminate()
-
-
-@app.route("/logs")
-def logs():
-    """Flask route that streams logs to the frontend using Server-Sent Events (SSE)."""
-    return Response(stream_logs(), mimetype="text/event-stream"), {"Cache-Control": "no-cache"}
 
 
 if __name__ == "__main__":

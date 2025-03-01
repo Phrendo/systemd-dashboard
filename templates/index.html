@@ -57,25 +57,59 @@
         </tbody>
     </table>
 
-    <h2>Service Logs (schwab_tokens.service)</h2>
-    <pre id="log-output" style="background-color: black; color: white; padding: 10px; height: 300px; overflow-y: scroll; text-align: left;"></pre>
+    <h2>Service Logs</h2>
+    <div id="log-panels">
+        <div class="log-panel">
+            <h3>schwab_tokens.service</h3>
+            <pre id="log-output-schwab_tokens" class="log-output"></pre>
+        </div>
+        <div class="log-panel">
+            <h3>tt_main.service</h3>
+            <pre id="log-output-tt_main" class="log-output"></pre>
+        </div>
+    </div>
     
     <script>
-        const logOutput = document.getElementById("log-output");
-
-        const eventSource = new EventSource("/logs");
-
-        eventSource.onmessage = function(event) {
-            if (event.data.trim() !== "") {  // Prevent empty messages
-                logOutput.innerHTML += event.data + "\n";
-                logOutput.scrollTop = logOutput.scrollHeight;  // Auto-scroll to latest logs
-            }
-        };
-
-        eventSource.onerror = function() {
-            console.error("Error connecting to logs stream.");
-        };
+        function startLogStream(serviceName) {
+            const logOutput = document.getElementById(`log-output-${serviceName}`);
+            const eventSource = new EventSource(`/logs/${serviceName}`);
+    
+            eventSource.onmessage = function(event) {
+                if (event.data.trim() !== "") {
+                    logOutput.innerHTML += event.data + "\n";
+                    logOutput.scrollTop = logOutput.scrollHeight;
+                }
+            };
+    
+            eventSource.onerror = function() {
+                console.error(`Error connecting to logs stream for ${serviceName}`);
+            };
+        }
+    
+        // Start streaming logs for each service
+        startLogStream("schwab_tokens");
+        startLogStream("tt_main");
     </script>
+    
+    <style>
+        .log-panel {
+            width: 45%;
+            display: inline-block;
+            vertical-align: top;
+            margin: 10px;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            text-align: left;
+        }
+        .log-output {
+            height: 250px;
+            overflow-y: scroll;
+        }
+    </style>
+    
     
 </body>
 </html>
