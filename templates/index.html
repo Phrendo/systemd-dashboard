@@ -56,6 +56,11 @@
     document.addEventListener("htmx:afterSwap", function(event) {
         autoScrollLogs();
     });
+    
+    document.querySelectorAll('.log-output').forEach(logOutput => {
+    logOutput.scrollTop = logOutput.scrollHeight;
+    });
+
     </script>
 
     <table>
@@ -83,6 +88,12 @@
     </div>
 
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent the entire page from having extra scroll */
+        }
+
         .log-panel {
             width: 95%;
             margin: 10px auto;
@@ -92,7 +103,7 @@
             border-radius: 5px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
             text-align: left;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrolling on the entire panel */
         }
 
         .log-panel h3 {
@@ -108,14 +119,16 @@
 
         .log-output {
             height: 250px;
-            overflow-y: auto;
+            overflow-y: auto; /* This should be the ONLY scrolling element */
             font-family: monospace;
             white-space: pre-wrap;
             background-color: black;
             padding: 5px;
             border-top: 1px solid #444;
-            margin: 0; /* Remove margin that might cause extra space */
+            margin: 0;
+            scrollbar-width: thin; /* Optional: make scrollbar smaller */
         }
+
 
 
     </style>
