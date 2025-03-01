@@ -28,22 +28,19 @@
     
     <script>
     document.getElementById("add-service-form").addEventListener("submit", function(event) {
-        event.preventDefault();  // Prevent normal form submission
-    
+        event.preventDefault();
+
         let serviceName = document.getElementById("service-name").value;
         let serviceDescription = document.getElementById("service-description").value;
-    
+
         fetch("/add_service", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: serviceName,
-                description: serviceDescription
-            })
+            body: JSON.stringify({ name: serviceName, description: serviceDescription })
         }).then(response => response.json())
           .then(data => {
               if (data.success) {
-                  location.reload();  // Reload to reflect new service
+                  location.reload();
               } else {
                   alert("Error: " + data.error);
               }
@@ -59,43 +56,19 @@
 
     <h2>Service Logs</h2>
     <div id="log-panels">
+        {% for service in services %}
         <div class="log-panel">
-            <h3>mssql-server</h3>
-            <pre id="log-output-mssql-server" class="log-output"></pre>
+            <h3>{{ service.name }}</h3>
+            <pre id="log-output-{{ service.name }}" class="log-output"
+                hx-get="/logs/{{ service.name }}" 
+                hx-trigger="load, every 5s" 
+                hx-target="#log-output-{{ service.name }}" 
+                hx-swap="outerHTML">
+            </pre>
         </div>
-        <div class="log-panel">
-            <h3>schwab_tokens.service</h3>
-            <pre id="log-output-schwab_tokens" class="log-output"></pre>
-        </div>
-        <div class="log-panel">
-            <h3>tt_main.service</h3>
-            <pre id="log-output-tt_main" class="log-output"></pre>
-        </div>
+        {% endfor %}
     </div>
-    
-    <script>
-        function startLogStream(serviceName) {
-            const logOutput = document.getElementById(`log-output-${serviceName}`);
-            const eventSource = new EventSource(`/logs/${serviceName}`);
-    
-            eventSource.onmessage = function(event) {
-                if (event.data.trim() !== "") {
-                    logOutput.innerHTML += event.data + "\n";
-                    logOutput.scrollTop = logOutput.scrollHeight;
-                }
-            };
-    
-            eventSource.onerror = function() {
-                console.error(`Error connecting to logs stream for ${serviceName}`);
-            };
-        }
-    
-        // Start streaming logs for each service
-        startLogStream("schwab_tokens");
-        startLogStream("tt_main");
-        startLogStream("mssql-server");
-    </script>
-    
+
     <style>
         .log-panel {
             width: 95%;
@@ -112,7 +85,7 @@
             margin: 0;
             padding-bottom: 5px;
             font-size: 18px;
-            background-color: #222; /* Darker background to differentiate */
+            background-color: #222;
             padding: 10px;
             position: sticky;
             top: 0;
@@ -121,17 +94,13 @@
 
         .log-output {
             height: 250px;
-            overflow-y: auto; /* Logs scroll independently */
+            overflow-y: auto;
             font-family: monospace;
             white-space: pre-wrap;
             background-color: black;
             padding: 5px;
             border-top: 1px solid #444;
         }
-
-
     </style>
-    
-    
 </body>
 </html>

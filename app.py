@@ -1,6 +1,6 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify, render_template_string, make_response, Response
+from flask import Flask, render_template, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from models import db, Service
 
@@ -85,24 +85,24 @@ def delete_service(service_id):
 
 @app.route("/logs/<service_name>")
 def logs(service_name):
-    """Stream logs for a specific service."""
-    return Response(stream_logs(service_name), mimetype="text/event-stream"), {"Cache-Control": "no-cache"}
-
-def stream_logs(service_name):
-    """Generator function to stream logs from journalctl for a given service."""
-    process = subprocess.Popen(
-        ["journalctl", "-u", service_name, "--output=cat", "-f"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
+    """Fetch the latest logs for a given service (polling-based)."""
+    logs = fetch_logs(service_name)
+    return render_template_string(
+        "<pre id='log-output-{{ service_name }}' class='log-output'>{{ logs }}</pre>",
+        service_name=service_name,
+        logs=logs
     )
 
+def fetch_logs(service_name):
+    """Fetch the last 20 logs from journalctl for a given service."""
     try:
-        for line in iter(process.stdout.readline, ""):
-            yield f"data: {line.strip()}\n\n"
-    except GeneratorExit:
-        process.terminate()
-
+        result = subprocess.run(
+            ["journalctl", "-u", service_name, "--output=cat", "-n", "20"],
+            capture_output=True, text=True
+        )
+        return result.stdout.strip() if result.stdout else "No logs found."
+    except Exception as e:
+        return f"Error fetching logs: {e}"
 
 if __name__ == "__main__":
     with app.app_context():
