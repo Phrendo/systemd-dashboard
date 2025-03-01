@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Dashboard</title>
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+
     <style>
-        /* Global Reset */
+        /* Reset & Global Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -14,7 +15,6 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            overflow-y: auto; /* ✅ Page scrolls if needed */
         }
 
         table {
@@ -35,14 +35,14 @@
 
         button { margin: 5px; }
 
-        /* 🔥 FORCE LOG OUTPUT TO CONTROL SCROLLING */
+        /* LOG PANEL STYLES */
         .log-container {
             width: 95%;
             margin: 10px auto;
             text-align: left;
         }
 
-        /* Service Name Title (does NOT scroll) */
+        /* Service Name Title */
         .log-title {
             font-size: 18px;
             font-weight: bold;
@@ -52,7 +52,7 @@
             border-radius: 5px 5px 0 0;
         }
 
-        /* Log Output (SCROLLS) */
+        /* Log Output */
         .log-output {
             width: 100%;
             height: 250px;
@@ -61,12 +61,11 @@
             font-family: monospace;
             white-space: pre-wrap;
             padding: 10px;
-            overflow-y: auto; /* ✅ ONLY THIS SCROLLS */
+            overflow-y: auto;
             border-radius: 0 0 5px 5px;
             display: block;
             scrollbar-width: thin;
         }
-
     </style>
 </head>
 <body>
@@ -123,12 +122,13 @@
     {% for service in services %}
         <div class="log-container">
             <div class="log-title">{{ service.name }}</div>
-            <pre id="log-output-schwab_tokens" class="log-output" 
-            hx-get="/logs/schwab_tokens" 
-            hx-trigger="every 5s" 
-            hx-target="#log-output-schwab_tokens" 
-            hx-swap="innerHTML">
-        </pre>
+            <pre id="log-output-{{ service.name }}" 
+                class="log-output"
+                hx-get="/logs/{{ service.name }}"
+                hx-trigger="every 5s"
+                hx-target="#log-output-{{ service.name }}"
+                hx-swap="innerHTML">
+            </pre>
         </div>
     {% endfor %}
 

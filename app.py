@@ -1,12 +1,12 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify, render_template_string
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify
+
 from models import db, Service
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///services.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///services.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 def get_service_status(service_name):
@@ -25,29 +25,26 @@ def index():
 
 @app.route("/status")
 def status():
-    """Update service statuses and return them to the frontend."""
+    """Fetch updated service statuses."""
     services = Service.query.all()
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
+    
+    return render_template("status_partial.html", services=services)
 
-    return render_template_string(
-        "<tbody id='service-list'>"
-        "{% for service in services %}"
-        "<tr id='service-{{ service.id }}'>"
-        "    <td>{{ service.name }}</td>"
-        "    <td class='{{ service.status }}'>{{ service.status }}</td>"
-        "    <td>"
-        "        <button hx-delete='/delete_service/{{ service.id }}' "
-        "                hx-target='#service-{{ service.id }}' "
-        "                hx-swap='outerHTML'>❌ Remove</button>"
-        "    </td>"
-        "</tr>"
-        "{% endfor %}"
-        "</tbody>",
-        services=services
+@app.route("/logs/<service_name>")
+def logs(service_name):
+    """Return logs for the requested service."""
+    process = subprocess.Popen(
+        ["journalctl", "-u", service_name, "--output=cat", "-n", "50"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
     )
+    logs, _ = process.communicate()
+    return logs, 200, {"Content-Type": "text/plain"}
 
 @app.route("/add_service", methods=["POST"])
 def add_service():
@@ -82,30 +79,6 @@ def delete_service(service_id):
     db.session.delete(service)
     db.session.commit()
     return jsonify({"success": True})
-
-@app.route("/logs/<service_name>")
-def logs(service_name):
-    """Return logs as plain text for HTMX to insert directly."""
-    process = subprocess.Popen(
-        ["journalctl", "-u", service_name, "--output=cat", "-n", "50"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    logs, _ = process.communicate()
-    return logs, 200, {"Content-Type": "text/plain"}
-
-
-def fetch_logs(service_name):
-    """Fetch the last 20 logs from journalctl for a given service."""
-    try:
-        result = subprocess.run(
-            ["journalctl", "-u", service_name, "--output=cat", "-n", "20"],
-            capture_output=True, text=True
-        )
-        return result.stdout.strip() if result.stdout else "No logs found."
-    except Exception as e:
-        return f"Error fetching logs: {e}"
 
 if __name__ == "__main__":
     with app.app_context():
