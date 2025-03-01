@@ -14,7 +14,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            overflow-y: auto; /* ✅ Ensures only body scrolls when necessary */
+            overflow-y: auto; /* ✅ Ensures body scrolls only if necessary */
         }
 
         table {
@@ -35,21 +35,37 @@
 
         button { margin: 5px; }
 
-        /* LOG OUTPUT */
-        .log-output {
+        /* LOG CONTAINER */
+        .log-container {
             width: 95%;
             margin: 10px auto;
-            background-color: black;
+            text-align: left;
+        }
+
+        /* LOG HEADER (LABELS) */
+        .log-title {
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #222;
             color: white;
             padding: 10px;
-            border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-            text-align: left;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+        }
+
+        /* LOG OUTPUT */
+        .log-output {
+            width: 100%;
+            height: 250px;
+            background-color: black;
+            color: white;
             font-family: monospace;
             white-space: pre-wrap;
-            height: 250px;
-            overflow-y: auto; /* ✅ Only this scrolls */
+            padding: 10px;
+            overflow-y: auto; /* ✅ ONLY THIS SCROLLS */
             scrollbar-width: thin;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
     </style>
 </head>
@@ -105,13 +121,16 @@
     <h2>Service Logs</h2>
 
     {% for service in services %}
-        <pre id="log-output-{{ service.name }}"
-            class="log-output"
-            hx-get="/logs/{{ service.name }}"
-            hx-trigger="every 5s"
-            hx-target="#log-output-{{ service.name }}"
-            hx-swap="innerHTML">
-        </pre>
+        <div class="log-container">
+            <div class="log-title">{{ service.name }}</div> <!-- 🔥 FIX: LABELS ARE BACK -->
+            <pre id="log-output-{{ service.name }}"
+                class="log-output"
+                hx-get="/logs/{{ service.name }}"
+                hx-trigger="every 5s"
+                hx-target="#log-output-{{ service.name }}"
+                hx-swap="innerHTML">
+            </pre>
+        </div>
     {% endfor %}
 
 </body>
