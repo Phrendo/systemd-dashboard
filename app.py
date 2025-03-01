@@ -1,6 +1,7 @@
 import subprocess
 from datetime import datetime, timezone
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, render_template_string
+
 
 from models import db, Service
 
