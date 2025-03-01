@@ -95,19 +95,7 @@
             overflow: auto; /* Prevents scrolling on the entire page */
         }
 
-        .log-panel {
-            width: 95%;
-            margin: 10px auto;
-            background-color: black;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-            text-align: left;
-            overflow: hidden; /* This prevents the panel from scrolling */
-            display: flex;
-            flex-direction: column;
-        }
+
 
         .log-panel h3 {
             margin: 0;
@@ -120,10 +108,26 @@
             z-index: 10;
         }
 
+
+
+        .log-panel {
+            width: 95%;
+            margin: 10px auto;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 🚨 REMOVE SCROLLING FROM PANEL */
+        }
+
         .log-output {
-            flex-grow: 1; /* Forces this element to take remaining space */
+            flex-grow: 1; /* Expands inside the panel */
             max-height: 250px;
-            overflow-y: auto; /* THIS should be the only scrollable area */
+            overflow-y: auto; /* ✅ ONLY THIS SHOULD SCROLL */
             font-family: monospace;
             white-space: pre-wrap;
             background-color: black;
