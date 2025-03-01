@@ -31,8 +31,23 @@ def status():
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
-    
-    return render_template("status_partial.html", services=services)
+
+    return render_template_string(
+        "<tbody id='service-list'>"
+        "{% for service in services %}"
+        "<tr id='service-{{ service.id }}'>"
+        "    <td>{{ service.name }}</td>"
+        "    <td class='{{ service.status }}'>{{ service.status }}</td>"
+        "    <td>"
+        "        <button hx-delete='/delete_service/{{ service.id }}' "
+        "                hx-target='#service-{{ service.id }}' "
+        "                hx-swap='outerHTML'>❌ Remove</button>"
+        "    </td>"
+        "</tr>"
+        "{% endfor %}"
+        "</tbody>",
+        services=services
+    )
 
 @app.route("/logs/<service_name>")
 def logs(service_name):
