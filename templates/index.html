@@ -59,12 +59,14 @@
         {% for service in services %}
         <div class="log-panel">
             <h3>{{ service.name }}</h3>
-            <pre id="log-output-{{ service.name }}" class="log-output"
-                hx-get="/logs/{{ service.name }}" 
-                hx-trigger="load, every 5s" 
-                hx-target="#log-output-{{ service.name }}" 
+            <pre id="log-output-{{ service.name }}"
+                class="log-output"
+                hx-get="/logs/{{ service.name }}"
+                hx-trigger="every 5s"
+                hx-target="#log-output-{{ service.name }}"
                 hx-swap="outerHTML">
             </pre>
+
         </div>
         {% endfor %}
     </div>
