@@ -34,21 +34,14 @@ def status():
     db.session.commit()
 
     return render_template_string(
-        "<tbody id='service-list'>"
         "{% for service in services %}"
-        "<tr id='service-{{ service.id }}'>"
-        "    <td>{{ service.name }}</td>"
-        "    <td class='{{ service.status }}'>{{ service.status }}</td>"
-        "    <td>"
-        "        <button hx-delete='/delete_service/{{ service.id }}' "
-        "                hx-target='#service-{{ service.id }}' "
-        "                hx-swap='outerHTML'>❌ Remove</button>"
-        "    </td>"
-        "</tr>"
-        "{% endfor %}"
-        "</tbody>",
+        "<div class='service-item' style='color: {% if service.status == 'active' %}green{% else %}red{% endif %};'>"
+        "    {{ service.name }}"
+        "</div>"
+        "{% endfor %}",
         services=services
     )
+
 
 @app.route("/logs/<service_name>")
 def logs(service_name):

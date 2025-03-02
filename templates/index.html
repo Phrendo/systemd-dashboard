@@ -71,11 +71,7 @@
     <h1>Service Dashboard</h1>
 
     <div class="service-list" id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
-        {% for service in services %}
-            <div class="service-item" style="color: {% if service.status == 'active' %}green{% else %}red{% endif %};">
-                {{ service.name }}
-            </div>
-        {% endfor %}
+        <!-- Service items will be populated here -->
     </div>
 
     <h2>Service Logs</h2>
