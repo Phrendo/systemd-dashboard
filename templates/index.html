@@ -6,7 +6,7 @@
     <title>Service Dashboard</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
-
+    
     <style>
         /* Reset & Global Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,6 +37,22 @@
             background-color: #222;
             padding: 10px;
             border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-title button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .log-title button:hover {
+            background-color: #555;
         }
 
         /* Log Output */
@@ -57,10 +73,15 @@
 </head>
 <body>
 
+    <h1>Service Dashboard</h1>
+
+    <h2>Service Logs</h2>
+
     {% for service in services %}
         <div class="log-container">
             <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}">
                 {{ service.name }}
+                <button onclick="window.open('/logs/{{ service.name }}', '_blank')">Pop Out</button>
             </div>
             <pre id="log-output-{{ service.name }}" 
                 class="log-output"
