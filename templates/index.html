@@ -40,6 +40,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
         }
 
         .log-title button {
@@ -66,19 +67,26 @@
             padding: 10px;
             overflow-y: auto;
             border-radius: 0 0 5px 5px;
-            display: block;
+            display: none; /* Initially hidden */
             scrollbar-width: thin;
         }
     </style>
+
+    <script>
+        function toggleLog(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            logElement.style.display = logElement.style.display === "none" ? "block" : "none";
+        }
+    </script>
+
 </head>
 <body>
 
-
     {% for service in services %}
         <div class="log-container">
-            <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}">
+            <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}" onclick="toggleLog('{{ service.name }}')">
                 {{ service.name }}
-                <button onclick="window.open('/logs/{{ service.name }}', '_blank')">Pop Out</button>
+                <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">Pop Out</button>
             </div>
             <pre id="log-output-{{ service.name }}" 
                 class="log-output"
