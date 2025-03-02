@@ -33,14 +33,15 @@ def status():
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
 
-    return render_template_string(
-        "{% for service in services %}"
-        "<div class='service-item {% if service.status == 'active' %}active{% else %}inactive{% endif %}'>"
-        "    {{ service.name }}"
+    service_items = "".join([
+        f"<div class='service-item' style='color: { 'green' if service.status == 'active' else 'red' };'>"
+        f"    {service.name}"
         "</div>"
-        "{% endfor %}",
-        services=services
-    )
+        for service in services
+    ])
+
+    return service_items
+
 
 
 @app.route("/logs/<service_name>")
