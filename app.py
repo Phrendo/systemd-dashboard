@@ -1,7 +1,7 @@
 import subprocess
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, jsonify, render_template_string
-
+from flask import send_from_directory
 
 from models import db, Service
 
@@ -35,7 +35,10 @@ def status():
 
     return "", 204  # No content response
 
-
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                          'favicon.ico',mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/logs/<service_name>")
