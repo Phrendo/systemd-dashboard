@@ -17,20 +17,6 @@
             padding: 0;
         }
 
-        .service-list {
-            display: flex;
-            justify-content: center;
-            gap: 20px; /* Adjust gap as needed */
-            flex-wrap: nowrap;
-        }
-
-        .service-item {
-            padding: 10px;
-            border: 1px solid black;
-            border-radius: 5px;
-            margin: 5px;
-        }
-
         .active { color: green; }
         .inactive { color: red; }
 
@@ -71,15 +57,13 @@
 
     <h1>Service Dashboard</h1>
 
-    <div class="service-list" id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
-        <!-- Service items will be populated here -->
-    </div>
-
     <h2>Service Logs</h2>
 
     {% for service in services %}
         <div class="log-container">
-            <div class="log-title">{{ service.name }}</div>
+            <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}">
+                {{ service.name }}
+            </div>
             <pre id="log-output-{{ service.name }}" 
                 class="log-output"
                 hx-get="/logs/{{ service.name }}"

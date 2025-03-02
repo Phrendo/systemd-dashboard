@@ -33,14 +33,8 @@ def status():
         service.last_checked = datetime.now(timezone.utc)
     db.session.commit()
 
-    service_items = "".join([
-        f"<div class='service-item' style='color: { 'green' if service.status == 'active' else 'red' };'>"
-        f"    {service.name}"
-        "</div>"
-        for service in services
-    ])
+    return "", 204  # No content response
 
-    return service_items
 
 
 
