@@ -16,7 +16,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #090f14; /* Dark blue background */
+            background-color: #080a0c; /* Dark blue background */
             color: white; /* Text color for contrast */
         }
 
@@ -77,6 +77,11 @@
             var logElement = document.getElementById("log-output-" + serviceName);
             logElement.style.display = logElement.style.display === "none" ? "block" : "none";
         }
+
+        function autoScrollLog(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
     </script>
 
 </head>
@@ -93,7 +98,8 @@
                 hx-get="/logs/{{ service.name }}"
                 hx-trigger="every 5s"
                 hx-target="#log-output-{{ service.name }}"
-                hx-swap="innerHTML">
+                hx-swap="innerHTML"
+                hx-on::after-settle="autoScrollLog('{{ service.name }}')">
             </pre>
         </div>
     {% endfor %}
