@@ -56,10 +56,6 @@
 </head>
 <body>
 
-    <h1>Service Dashboard</h1>
-
-    <h2>Service Logs</h2>
-
     {% for service in services %}
         <div class="log-container">
             <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}">
