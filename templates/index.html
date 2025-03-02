@@ -78,7 +78,9 @@
 
     {% for service in services %}
         <div class="log-container">
-            <div class="log-title">{{ service.name }}</div>
+            <div class="log-title" style="color: {{ service.status == 'active' ? 'green' : 'red' }};">
+                {{ service.name }}
+            </div>
             <pre id="log-output-{{ service.name }}" 
                 class="log-output"
                 hx-get="/logs/{{ service.name }}"
