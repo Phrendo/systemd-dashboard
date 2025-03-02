@@ -35,7 +35,7 @@ def status():
 
     return "", 204  # No content response
 
-@app.route('/term.ico')
+@app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                           'term.ico',mimetype='image/vnd.microsoft.icon')
