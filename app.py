@@ -35,7 +35,7 @@ def status():
 
     return render_template_string(
         "{% for service in services %}"
-        "<div class='service-item' style='color: {% if service.status == 'active' %}green{% else %}red{% endif %};'>"
+        "<div class='service-item {% if service.status == 'active' %}active{% else %}inactive{% endif %}'>"
         "    {{ service.name }}"
         "</div>"
         "{% endfor %}",
