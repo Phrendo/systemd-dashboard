@@ -17,23 +17,21 @@
             padding: 0;
         }
 
-        table {
-            width: 60%;
-            margin: auto;
-            border-collapse: collapse;
+        .service-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        th, td {
+        .service-item {
             padding: 10px;
             border: 1px solid black;
+            border-radius: 5px;
         }
 
-        .running { color: green; }
-        .failed { color: red; }
-        .inactive { color: gray; }
-        .error { color: orange; }
-
-        button { margin: 5px; }
+        .active { color: green; }
+        .inactive { color: red; }
 
         /* LOG PANEL STYLES */
         .log-container {
@@ -72,50 +70,9 @@
 
     <h1>Service Dashboard</h1>
 
-    <!-- Add Service Form -->
-    <form id="add-service-form">
-        <input type="text" id="service-name" placeholder="Service Name" required>
-        <input type="text" id="service-description" placeholder="Description">
-        <button type="submit">Add Service</button>
-    </form>
-
-    <script>
-        document.getElementById("add-service-form").addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            let serviceName = document.getElementById("service-name").value;
-            let serviceDescription = document.getElementById("service-description").value;
-
-            fetch("/add_service", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: serviceName, description: serviceDescription })
-            }).then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      location.reload();
-                  } else {
-                      alert("Error: " + data.error);
-                  }
-              });
-        });
-
-        function autoScrollLogs() {
-            document.querySelectorAll('.log-output').forEach(logOutput => {
-                logOutput.scrollTop = logOutput.scrollHeight;
-            });
-        }
-
-        document.addEventListener("htmx:afterSwap", function(event) {
-            autoScrollLogs();
-        });
-    </script>
-
-    <table>
-        <tr><th>Service</th><th>Status</th><th>Action</th></tr>
-        <tbody id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
-        </tbody>
-    </table>
+    <div class="service-list" id="service-list" hx-get="/status" hx-trigger="load, every 5s" hx-swap="outerHTML">
+        <!-- Service items will be populated here -->
+    </div>
 
     <h2>Service Logs</h2>
 
