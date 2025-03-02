@@ -38,7 +38,7 @@ def status():
 @app.route('/term.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
-                          'favicon.ico',mimetype='image/vnd.microsoft.icon')
+                          'term.ico',mimetype='image/vnd.microsoft.icon')
 
 
 @app.route("/logs/<service_name>")
