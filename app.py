@@ -99,14 +99,10 @@ def delete_service(service_id):
     db.session.commit()
     return jsonify({"success": True})
 
-# if __name__ == "__main__":
-#     with app.app_context():
-#         db.create_all()  # Ensure database is initialized
-#     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__ == "__main__":
     with app.app_context():
         services = Service.query.all()
         for service in services:
             print(f"Service: {service.name}, DB Status: {service.status}")
-
+        db.create_all()  # Ensure database is initialized
     app.run(host="0.0.0.0", port=5000, debug=True)
