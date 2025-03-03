@@ -78,8 +78,8 @@
         });
 
         function toggleAutoRefresh(serviceName) {
-            var logElement = document.getElementById("log-output-" + serviceName");
-            var refreshStatus = document.getElementById("refresh-status-" + serviceName");
+            var logElement = document.getElementById("log-output-" + serviceName);
+            var refreshStatus = document.getElementById("refresh-status-" + serviceName);
             var isEnabled = logElement.getAttribute("data-refresh-enabled") === "true";
 
             if (isEnabled) {
@@ -118,6 +118,13 @@
             });
         }
 
+        // Ensure logs load once when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".log-output").forEach(logElement => {
+                htmx.trigger(logElement, "load");
+            });
+        });
+
         setInterval(updateLogs, 5000);
     </script>
 
@@ -137,7 +144,7 @@
             </div>
             <pre id="log-output-{{ service.name }}" class="log-output"
                 hx-get="/logs/{{ service.name }}"
-                hx-trigger="custom-log-update"
+                hx-trigger="load, custom-log-update"
                 hx-target="#log-output-{{ service.name }}"
                 hx-swap="innerHTML">
             </pre>
