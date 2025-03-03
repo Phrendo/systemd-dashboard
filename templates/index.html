@@ -67,16 +67,6 @@
             localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            {% for service in services %}
-                var logElement = document.getElementById("log-output-{{ service.name }}");
-                var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
-                if (savedState === "closed") {
-                    logElement.style.display = "none";
-                }
-            {% endfor %}
-        });
-
         function toggleAutoRefresh(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
             var refreshStatus = document.getElementById("refresh-status-" + serviceName);
@@ -88,10 +78,25 @@
             } else {
                 logElement.setAttribute("data-refresh-enabled", "true");
                 refreshStatus.textContent = "On";
-                htmx.trigger(logElement, "custom-log-update"); // Immediate refresh when turning on
+                htmx.trigger(logElement, "custom-log-update");
             }
 
             localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
+        }
+
+        function autoScrollLog(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            requestAnimationFrame(() => {
+                logElement.scrollTop = logElement.scrollHeight;
+            });
+        }
+
+        function updateLogs() {
+            document.querySelectorAll(".log-output").forEach(logElement => {
+                if (logElement.getAttribute("data-refresh-enabled") === "true") {
+                    htmx.trigger(logElement, "custom-log-update");
+                }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -110,21 +115,6 @@
             {% endfor %}
         });
 
-        function updateLogs() {
-            document.querySelectorAll(".log-output").forEach(logElement => {
-                if (logElement.getAttribute("data-refresh-enabled") === "true") {
-                    htmx.trigger(logElement, "custom-log-update");
-                }
-            });
-        }
-
-        // Ensure logs load once when the page loads
-        document.addEventListener("DOMContentLoaded", function() {
-            document.querySelectorAll(".log-output").forEach(logElement => {
-                htmx.trigger(logElement, "load");
-            });
-        });
-
         setInterval(updateLogs, 5000);
     </script>
 
@@ -138,6 +128,9 @@
                     {{ service.status }}
                 </span>
                 {{ service.name }}
+                <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">
+                    Pop Out
+                </button>
                 <button onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
                     🔄 <span id="refresh-status-{{ service.name }}">On</span>
                 </button>
@@ -146,7 +139,8 @@
                 hx-get="/logs/{{ service.name }}"
                 hx-trigger="load, custom-log-update"
                 hx-target="#log-output-{{ service.name }}"
-                hx-swap="innerHTML">
+                hx-swap="innerHTML"
+                hx-on::after-settle="autoScrollLog('{{ service.name }}')">
             </pre>
         </div>
     {% endfor %}
