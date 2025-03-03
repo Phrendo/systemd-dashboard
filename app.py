@@ -10,13 +10,25 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///services.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
+# def get_service_status(service_name):
+#     """Check systemd status of a service."""
+#     try:
+#         result = subprocess.run(["systemctl", "is-active", service_name], capture_output=True, text=True)
+#         return result.stdout.strip()
+#     except Exception:
+#         return "error"
+
 def get_service_status(service_name):
     """Check systemd status of a service."""
     try:
         result = subprocess.run(["systemctl", "is-active", service_name], capture_output=True, text=True)
-        return result.stdout.strip()
-    except Exception:
+        status = result.stdout.strip()
+        print(f"DEBUG: {service_name} -> '{status}'")  # Debug output
+        return status
+    except Exception as e:
+        print(f"ERROR: Failed to check status of {service_name}: {e}")
         return "error"
+
 
 @app.route("/")
 def index():
