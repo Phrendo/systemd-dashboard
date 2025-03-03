@@ -30,14 +30,18 @@ def index():
 
 @app.route("/status")
 def status():
-    """Fetch updated service statuses."""
+    """Fetch updated service statuses and return as JSON."""
     services = Service.query.all()
+    status_data = {}
+
     for service in services:
         service.status = get_service_status(service.name)
         service.last_checked = datetime.now(timezone.utc)
-    db.session.commit()
+        status_data[service.name] = service.status  # Store in dictionary
 
-    return "", 204  # No content response
+    db.session.commit()
+    return jsonify(status_data)  # Return JSON
+
 
 @app.route('/favicon.ico')
 def favicon():

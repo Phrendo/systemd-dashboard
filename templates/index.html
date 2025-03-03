@@ -6,7 +6,7 @@
     <title>Service Dashboard</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
-    
+
     <style>
         /* Reset & Global Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,8 +16,8 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #080a0c; /* Dark blue background */
-            color: white; /* Text color for contrast */
+            background-color: #080a0c; /* Dark background */
+            color: white; /* Text color */
         }
 
         .active { color: green; }
@@ -84,13 +84,22 @@
         }
         
         function updateStatuses() {
-            fetch('/status')  // Calls Flask backend to update DB
-                .then(() => location.reload());  // Refresh only after update
+            fetch('/status')
+                .then(response => response.json())  // Get JSON response
+                .then(data => {
+                    for (const [service, status] of Object.entries(data)) {
+                        let element = document.getElementById("service-status-" + service);
+                        if (element) {
+                            element.textContent = status;  // Update text
+                            element.className = status === "active" ? "active" : "inactive"; // Update color
+                        }
+                    }
+                })
+                .catch(error => console.error("Error updating statuses:", error));
         }
 
-        // Run every 10 seconds
+        // Run every 10 seconds without full page reload
         setInterval(updateStatuses, 10000);
-
     </script>
 
 </head>
@@ -98,7 +107,10 @@
 
     {% for service in services %}
         <div class="log-container">
-            <div class="log-title {% if service.status == 'active' %}active{% else %}inactive{% endif %}" onclick="toggleLog('{{ service.name }}')">
+            <div class="log-title" onclick="toggleLog('{{ service.name }}')">
+                <span id="service-status-{{ service.name }}" class="{% if service.status == 'active' %}active{% else %}inactive{% endif %}">
+                    {{ service.status }}
+                </span>
                 {{ service.name }}
                 <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">Pop Out</button>
             </div>
