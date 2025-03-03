@@ -24,9 +24,20 @@ def get_service_status(service_name):
 
 @app.route("/")
 def index():
-    """Render the main dashboard."""
+    """Render the main dashboard with preloaded logs."""
     services = Service.query.all()
+    for service in services:
+        process = subprocess.Popen(
+            ["journalctl", "-u", service.name, "--no-pager", "--output=cat", "-n", "10"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        logs, _ = process.communicate()
+        service.logs = logs.strip()  # Attach logs to the service object
+
     return render_template("index.html", services=services)
+
 
 @app.route("/status")
 def status():
