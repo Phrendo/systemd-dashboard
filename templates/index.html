@@ -57,6 +57,19 @@
             display: block;
             scrollbar-width: thin;
         }
+        .refresh-button {
+            background-color: green; /* Active */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .refresh-button.paused {
+            background-color: orange; /* Paused */
+        }
+
     </style>
 
     <script>
@@ -86,20 +99,24 @@
 
         function toggleAutoRefresh(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
-            var refreshStatus = document.getElementById("refresh-status-" + serviceName);
+            var refreshButton = document.getElementById("refresh-button-" + serviceName);
             var isEnabled = logElement.getAttribute("data-refresh-enabled") === "true";
 
             if (isEnabled) {
                 logElement.setAttribute("data-refresh-enabled", "false");
-                refreshStatus.textContent = "Off";
+                refreshButton.textContent = "▶ Resume";
+                refreshButton.classList.add("paused");  // Change color to orange
             } else {
                 logElement.setAttribute("data-refresh-enabled", "true");
-                refreshStatus.textContent = "On";
-                htmx.trigger(logElement, "custom-log-update");
+                refreshButton.textContent = "⏸ Pause";
+                refreshButton.classList.remove("paused");  // Change color to green
+                htmx.trigger(logElement, "custom-log-update");  // Immediate refresh
             }
 
+            // Save to localStorage
             localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
         }
+
 
         function autoScrollLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
@@ -155,12 +172,13 @@
                     <span class="separator"></span> <!-- Adds space between action buttons and Pop Out -->
             
                     <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">
-                        Pop Out
+                        🖼️ Pop Out
                     </button>
-                    <button id="refresh-toggle-{{ service.name }}" onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
-
-                        🔄 <span id="refresh-status-{{ service.name }}">On</span>
+                    <button id="refresh-button-{{ service.name }}" class="refresh-button" 
+                            onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
+                        ⏸ Pause
                     </button>
+                    
                 </div>
             </div>
 
