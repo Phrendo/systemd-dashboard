@@ -105,7 +105,8 @@ def delete_service(service_id):
 #     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__ == "__main__":
     with app.app_context():
-        print("Testing get_service_status() manually...")
-        print(get_service_status("tt_main"))
-        print(get_service_status("SCHWAB_API_STREAM"))
+        services = Service.query.all()
+        for service in services:
+            print(f"Service: {service.name}, DB Status: {service.status}")
+
     app.run(host="0.0.0.0", port=5000, debug=True)
