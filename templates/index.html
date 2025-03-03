@@ -8,29 +8,22 @@
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
 
     <style>
-        /* Reset & Global Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #080a0c; /* Dark background */
+            background-color: #080a0c;
             color: white;
         }
-
         .active { color: green; }
         .inactive { color: red; }
-
-        /* LOG PANEL STYLES */
         .log-container {
             width: 95%;
             margin: 10px auto;
             text-align: left;
         }
-
-        /* Service Name Title */
         .log-title {
             font-size: 18px;
             font-weight: bold;
@@ -42,7 +35,6 @@
             align-items: center;
             cursor: pointer;
         }
-
         .log-title button {
             background-color: #444;
             color: white;
@@ -51,12 +43,7 @@
             border-radius: 3px;
             cursor: pointer;
         }
-
-        .log-title button:hover {
-            background-color: #555;
-        }
-
-        /* Log Output */
+        .log-title button:hover { background-color: #555; }
         .log-output {
             width: 100%;
             height: 250px;
@@ -73,45 +60,40 @@
     </style>
 
     <script>
-        // Toggle Log Panel Visibility & Save State
         function toggleLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
             var isCollapsed = logElement.style.display === "none";
-
-            // Toggle visibility
             logElement.style.display = isCollapsed ? "block" : "none";
-
-            // Save state to localStorage
             localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
         }
 
-        // Restore Panel Collapse States on Page Load
         document.addEventListener("DOMContentLoaded", function() {
             {% for service in services %}
                 var logElement = document.getElementById("log-output-{{ service.name }}");
                 var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
-
                 if (savedState === "closed") {
                     logElement.style.display = "none";
                 }
             {% endfor %}
         });
 
-        // Toggle Auto-Refresh for Logs
         function toggleAutoRefresh(serviceName) {
-            var logElement = document.getElementById("log-output-" + serviceName);
-            var refreshStatus = document.getElementById("refresh-status-" + serviceName);
+            var logElement = document.getElementById("log-output-" + serviceName");
+            var refreshStatus = document.getElementById("refresh-status-" + serviceName");
             var isEnabled = logElement.getAttribute("data-refresh-enabled") === "true";
 
-            // Toggle auto-refresh state
-            logElement.setAttribute("data-refresh-enabled", isEnabled ? "false" : "true");
-            refreshStatus.textContent = isEnabled ? "Off" : "On";
+            if (isEnabled) {
+                logElement.setAttribute("data-refresh-enabled", "false");
+                refreshStatus.textContent = "Off";
+            } else {
+                logElement.setAttribute("data-refresh-enabled", "true");
+                refreshStatus.textContent = "On";
+                htmx.trigger(logElement, "custom-log-update"); // Immediate refresh when turning on
+            }
 
-            // Save state to localStorage
             localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
         }
 
-        // Restore Refresh States on Page Load
         document.addEventListener("DOMContentLoaded", function() {
             {% for service in services %}
                 var logElement = document.getElementById("log-output-{{ service.name }}");
@@ -121,27 +103,22 @@
                 if (savedRefreshState === "disabled") {
                     logElement.setAttribute("data-refresh-enabled", "false");
                     refreshStatus.textContent = "Off";
+                } else {
+                    logElement.setAttribute("data-refresh-enabled", "true");
+                    refreshStatus.textContent = "On";
                 }
             {% endfor %}
         });
 
-        // Update Logs Only for Services with Refresh Enabled
         function updateLogs() {
             document.querySelectorAll(".log-output").forEach(logElement => {
                 if (logElement.getAttribute("data-refresh-enabled") === "true") {
-                    htmx.trigger(logElement, "every 5s");  // Trigger HTMX update only if enabled
+                    htmx.trigger(logElement, "custom-log-update");
                 }
             });
         }
 
-        // Run log updates every 5 seconds
         setInterval(updateLogs, 5000);
-
-        // Auto-scroll logs when they update
-        function autoScrollLog(serviceName) {
-            var logElement = document.getElementById("log-output-" + serviceName);
-            logElement.scrollTop = logElement.scrollHeight;
-        }
     </script>
 
 </head>
@@ -154,20 +131,15 @@
                     {{ service.status }}
                 </span>
                 {{ service.name }}
-                <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">Pop Out</button>
                 <button onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
                     🔄 <span id="refresh-status-{{ service.name }}">On</span>
                 </button>
             </div>
-            <pre id="log-output-{{ service.name }}" 
-                class="log-output"
+            <pre id="log-output-{{ service.name }}" class="log-output"
                 hx-get="/logs/{{ service.name }}"
-                hx-trigger="every 5s"
+                hx-trigger="custom-log-update"
                 hx-target="#log-output-{{ service.name }}"
-                hx-swap="innerHTML"
-                hx-on::after-settle="autoScrollLog('{{ service.name }}')"
-                data-refresh-enabled="true">
-                {{ service.logs | default("Loading logs...") }}
+                hx-swap="innerHTML">
             </pre>
         </div>
     {% endfor %}
