@@ -124,18 +124,26 @@
     {% for service in services %}
         <div class="log-container">
             <div class="log-title" onclick="toggleLog('{{ service.name }}')">
-
                 <span id="service-status-{{ service.name }}" class="{% if service.status == 'active' %}active{% else %}inactive{% endif %}">
                     {{ service.name }}
                 </span>
-                
-
-                <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">
-                    Pop Out
-                </button>
-                <button onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
-                    🔄 <span id="refresh-status-{{ service.name }}">On</span>
-                </button>
+            
+                <div class="button-container">
+                    <button onclick="event.stopPropagation();">▶ Start</button>
+                    <button onclick="event.stopPropagation();">⏹ Stop</button>
+                    <button onclick="event.stopPropagation();">🔄 Restart</button>
+            
+                    <span class="separator"></span> <!-- Adds space between action buttons and Pop Out -->
+            
+                    <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">
+                        Pop Out
+                    </button>
+                    <button onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
+                        🔄 <span id="refresh-status-{{ service.name }}">On</span>
+                    </button>
+                </div>
+            </div>
+            >
             </div>
             <pre id="log-output-{{ service.name }}" class="log-output"
                 hx-get="/logs/{{ service.name }}"
