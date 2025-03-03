@@ -17,7 +17,7 @@
             margin: 0;
             padding: 0;
             background-color: #080a0c; /* Dark background */
-            color: white; /* Text color */
+            color: white;
         }
 
         .active { color: green; }
@@ -67,39 +67,81 @@
             padding: 10px;
             overflow-y: auto;
             border-radius: 0 0 5px 5px;
-            display: block; /* Default to expanded */
+            display: block;
             scrollbar-width: thin;
         }
     </style>
 
     <script>
+        // Toggle Log Panel Visibility & Save State
         function toggleLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
-            logElement.style.display = logElement.style.display === "none" ? "block" : "none";
+            var isCollapsed = logElement.style.display === "none";
+
+            // Toggle visibility
+            logElement.style.display = isCollapsed ? "block" : "none";
+
+            // Save state to localStorage
+            localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
         }
 
+        // Restore Panel Collapse States on Page Load
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for service in services %}
+                var logElement = document.getElementById("log-output-{{ service.name }}");
+                var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
+
+                if (savedState === "closed") {
+                    logElement.style.display = "none";
+                }
+            {% endfor %}
+        });
+
+        // Toggle Auto-Refresh for Logs
+        function toggleAutoRefresh(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            var refreshStatus = document.getElementById("refresh-status-" + serviceName);
+            var isEnabled = logElement.getAttribute("data-refresh-enabled") === "true";
+
+            // Toggle auto-refresh state
+            logElement.setAttribute("data-refresh-enabled", isEnabled ? "false" : "true");
+            refreshStatus.textContent = isEnabled ? "Off" : "On";
+
+            // Save state to localStorage
+            localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
+        }
+
+        // Restore Refresh States on Page Load
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for service in services %}
+                var logElement = document.getElementById("log-output-{{ service.name }}");
+                var refreshStatus = document.getElementById("refresh-status-{{ service.name }}");
+                var savedRefreshState = localStorage.getItem("log-refresh-{{ service.name }}");
+
+                if (savedRefreshState === "disabled") {
+                    logElement.setAttribute("data-refresh-enabled", "false");
+                    refreshStatus.textContent = "Off";
+                }
+            {% endfor %}
+        });
+
+        // Update Logs Only for Services with Refresh Enabled
+        function updateLogs() {
+            document.querySelectorAll(".log-output").forEach(logElement => {
+                if (logElement.getAttribute("data-refresh-enabled") === "true") {
+                    htmx.trigger(logElement, "every 5s");  // Trigger HTMX update only if enabled
+                }
+            });
+        }
+
+        // Run log updates every 5 seconds
+        setInterval(updateLogs, 5000);
+
+        // Auto-scroll logs when they update
         function autoScrollLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
             logElement.scrollTop = logElement.scrollHeight;
         }
-        
-        function updateStatuses() {
-            fetch('/status')
-                .then(response => response.json())  // Get JSON response
-                .then(data => {
-                    for (const [service, status] of Object.entries(data)) {
-                        let element = document.getElementById("service-status-" + service);
-                        if (element) {
-                            element.textContent = status;  // Update text
-                            element.className = status === "active" ? "active" : "inactive"; // Update color
-                        }
-                    }
-                })
-                .catch(error => console.error("Error updating statuses:", error));
-        }
-
-        // Run every 10 seconds without full page reload
-        setInterval(updateStatuses, 10000);
     </script>
 
 </head>
@@ -113,6 +155,9 @@
                 </span>
                 {{ service.name }}
                 <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">Pop Out</button>
+                <button onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">
+                    🔄 <span id="refresh-status-{{ service.name }}">On</span>
+                </button>
             </div>
             <pre id="log-output-{{ service.name }}" 
                 class="log-output"
@@ -120,10 +165,10 @@
                 hx-trigger="every 5s"
                 hx-target="#log-output-{{ service.name }}"
                 hx-swap="innerHTML"
-                hx-on::after-settle="autoScrollLog('{{ service.name }}')">
-                {{ service.logs | default("Loading logs...") }}  <!-- Preload logs immediately -->
+                hx-on::after-settle="autoScrollLog('{{ service.name }}')"
+                data-refresh-enabled="true">
+                {{ service.logs | default("Loading logs...") }}
             </pre>
-        
         </div>
     {% endfor %}
 
