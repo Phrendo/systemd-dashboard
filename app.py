@@ -99,7 +99,13 @@ def delete_service(service_id):
     db.session.commit()
     return jsonify({"success": True})
 
+# if __name__ == "__main__":
+#     with app.app_context():
+#         db.create_all()  # Ensure database is initialized
+#     app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  # Ensure database is initialized
+        print("Testing get_service_status() manually...")
+        print(get_service_status("tt_main"))
+        print(get_service_status("SCHWAB_API_STREAM"))
     app.run(host="0.0.0.0", port=5000, debug=True)
