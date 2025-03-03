@@ -82,6 +82,15 @@
             var logElement = document.getElementById("log-output-" + serviceName);
             logElement.scrollTop = logElement.scrollHeight;
         }
+        
+        function updateStatuses() {
+            fetch('/status')  // Calls Flask backend to update DB
+                .then(() => location.reload());  // Refresh only after update
+        }
+
+        // Run every 10 seconds
+        setInterval(updateStatuses, 10000);
+
     </script>
 
 </head>
