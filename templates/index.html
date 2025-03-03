@@ -75,26 +75,15 @@
     <script>
         function toggleLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
-            var refreshStatus = document.getElementById("refresh-status-" + serviceName);
             var isCollapsed = logElement.style.display === "none";
 
             // Toggle visibility
             logElement.style.display = isCollapsed ? "block" : "none";
 
-            // If collapsed, disable auto-refresh
-            if (!isCollapsed) {
-                logElement.setAttribute("data-refresh-enabled", "false");
-                refreshStatus.textContent = "Off";
-            } else {
-                logElement.setAttribute("data-refresh-enabled", "true");
-                refreshStatus.textContent = "On";
-                htmx.trigger(logElement, "custom-log-update");  // Force immediate update when reopening
-            }
-
-            // Save state to localStorage
+            // Save state to localStorage (but don't mess with auto-refresh)
             localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
-            localStorage.setItem("log-refresh-" + serviceName, isCollapsed ? "enabled" : "disabled");
         }
+
 
 
         function toggleAutoRefresh(serviceName) {
@@ -136,20 +125,28 @@
         document.addEventListener("DOMContentLoaded", function() {
             {% for service in services %}
                 var logElement = document.getElementById("log-output-{{ service.name }}");
-                var refreshStatus = document.getElementById("refresh-status-{{ service.name }}");
+                var refreshButton = document.getElementById("refresh-button-{{ service.name }}");
                 var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
                 var savedRefreshState = localStorage.getItem("log-refresh-{{ service.name }}");
 
+                // Restore collapse state
                 if (savedState === "closed") {
                     logElement.style.display = "none";
+                }
+
+                // Restore refresh state (independent of collapse state)
+                if (savedRefreshState === "disabled") {
                     logElement.setAttribute("data-refresh-enabled", "false");
-                    refreshStatus.textContent = "Off";
+                    refreshButton.textContent = "▶ Resume";
+                    refreshButton.classList.add("paused");
                 } else {
                     logElement.setAttribute("data-refresh-enabled", "true");
-                    refreshStatus.textContent = "On";
+                    refreshButton.textContent = "⏸ Pause";
+                    refreshButton.classList.remove("paused");
                 }
             {% endfor %}
         });
+
 
         setInterval(updateLogs, 5000);
     </script>
