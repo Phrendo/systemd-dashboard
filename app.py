@@ -65,8 +65,8 @@ def favicon():
 def logs(service_name):
     """Return logs for the requested service."""
     process = subprocess.Popen(
-        ["journalctl", "-u", service_name, "--output=cat", "-n", "50"],
-        #["journalctl", "-u", service.name, "--output=short-iso", "-n", "50"],
+        #["journalctl", "-u", service_name, "--output=cat", "-n", "50"],
+        ["journalctl", "-u", service_name, "--output=short", "-n", "50"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
