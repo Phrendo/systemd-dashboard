@@ -28,7 +28,8 @@ def index():
     services = Service.query.all()
     for service in services:
         process = subprocess.Popen(
-            ["journalctl", "-u", service.name, "--no-pager", "--output=cat", "-n", "10"],
+            #["journalctl", "-u", service.name, "--no-pager", "--output=cat", "-n", "10"],
+            ["journalctl", "-u", service.name, "--no-pager", "--output=short-iso", "-n", "10"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
