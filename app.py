@@ -18,16 +18,27 @@ def get_service_status(service_name):
     except Exception as e:
         return "error"
 
+# @app.route("/")
+# def index():
+#     """Render the main dashboard."""
+#     services = Service.query.all()
+#     for service in services:
+#         process = subprocess.Popen([
+#             "journalctl", "-u", service.name, "--no-pager", "--output=short-iso", "-n", "10"
+#         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+#         logs, _ = process.communicate()
+#         service.logs = logs.strip()
+#     return render_template("index.html", services=services)
+
 @app.route("/")
 def index():
-    """Render the main dashboard."""
+    """Render the main dashboard with preloaded logs."""
     services = Service.query.all()
+
     for service in services:
-        process = subprocess.Popen([
-            "journalctl", "-u", service.name, "--no-pager", "--output=short-iso", "-n", "10"
-        ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        logs, _ = process.communicate()
-        service.logs = logs.strip()
+        service.status = get_service_status(service.name)  # Force a live check
+        print(f"DEBUG: Passing to UI -> {service.name}: {service.status}")  # Debug Output
+
     return render_template("index.html", services=services)
 
 @app.route("/manage_services")
