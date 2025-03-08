@@ -58,18 +58,28 @@
             scrollbar-width: thin;
         }
         .refresh-button {
-            background-color: green; /* Active */
+            background-color: green;
             color: white;
             border: none;
             padding: 5px 10px;
             border-radius: 3px;
             cursor: pointer;
         }
-
         .refresh-button.paused {
-            background-color: orange; /* Paused */
+            background-color: orange;
         }
-
+        .manage-services {
+            display: inline-block;
+            padding: 10px;
+            background-color: #444;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        .manage-services:hover {
+            background-color: #555;
+        }
     </style>
 
     <script>
@@ -77,14 +87,9 @@
             var logElement = document.getElementById("log-output-" + serviceName);
             var isCollapsed = logElement.style.display === "none";
 
-            // Toggle visibility
             logElement.style.display = isCollapsed ? "block" : "none";
-
-            // Save state to localStorage (but don't mess with auto-refresh)
             localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
         }
-
-
 
         function toggleAutoRefresh(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
@@ -94,18 +99,16 @@
             if (isEnabled) {
                 logElement.setAttribute("data-refresh-enabled", "false");
                 refreshButton.textContent = "▶ Resume";
-                refreshButton.classList.add("paused");  // Change color to orange
+                refreshButton.classList.add("paused");
             } else {
                 logElement.setAttribute("data-refresh-enabled", "true");
                 refreshButton.textContent = "⏸ Pause";
-                refreshButton.classList.remove("paused");  // Change color to green
-                htmx.trigger(logElement, "custom-log-update");  // Immediate refresh
+                refreshButton.classList.remove("paused");
+                htmx.trigger(logElement, "custom-log-update");
             }
 
-            // Save to localStorage
             localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
         }
-
 
         function autoScrollLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
@@ -129,12 +132,10 @@
                 var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
                 var savedRefreshState = localStorage.getItem("log-refresh-{{ service.name }}");
 
-                // Restore collapse state
                 if (savedState === "closed") {
                     logElement.style.display = "none";
                 }
 
-                // Restore refresh state (independent of collapse state)
                 if (savedRefreshState === "disabled") {
                     logElement.setAttribute("data-refresh-enabled", "false");
                     refreshButton.textContent = "▶ Resume";
@@ -147,12 +148,14 @@
             {% endfor %}
         });
 
-
         setInterval(updateLogs, 5000);
     </script>
 
 </head>
 <body>
+
+    <!-- Manage Services Link -->
+    <a href="/manage_services" class="manage-services">⚙️ Manage Services</a>
 
     {% for service in services %}
         <div class="log-container">
@@ -166,8 +169,8 @@
                     <button onclick="event.stopPropagation();">⏹ Stop</button>
                     <button onclick="event.stopPropagation();">🔄 Restart</button>
             
-                    <span class="separator"></span> <!-- Adds space between action buttons and Pop Out -->
-            
+                    <span class="separator"></span>
+
                     <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">
                         🖼️ Pop Out
                     </button>
@@ -178,7 +181,6 @@
                     
                 </div>
             </div>
-
 
             <pre id="log-output-{{ service.name }}" class="log-output"
                 hx-get="/logs/{{ service.name }}"
