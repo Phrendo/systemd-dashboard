@@ -86,6 +86,7 @@
         }
     </style>
 
+    <!-- Added JavaScript function to handle service control actions -->
     <script>
         function toggleLog(serviceName) {
             var logElement = document.getElementById("log-output-" + serviceName);
@@ -129,6 +130,33 @@
             });
         }
 
+        // NEW: Function to call our service_action endpoint
+        function serviceAction(serviceName, action) {
+            fetch(`/service/${serviceName}/${action}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusElem = document.getElementById("service-status-" + serviceName);
+                    // Update CSS classes based on new status:
+                    if (data.status === "active") {
+                        statusElem.classList.remove("inactive");
+                        statusElem.classList.add("active");
+                    } else {
+                        statusElem.classList.remove("active");
+                        statusElem.classList.add("inactive");
+                    }
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error performing action: " + err);
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             {% for service in services %}
                 var logElement = document.getElementById("log-output-{{ service.name }}");
@@ -169,9 +197,10 @@
                 </span>
             
                 <div class="button-container">
-                    <button onclick="event.stopPropagation();">▶ Start</button>
-                    <button onclick="event.stopPropagation();">⏹ Stop</button>
-                    <button onclick="event.stopPropagation();">🔄 Restart</button>
+                    <!-- Added calls to serviceAction(...) in each button's onclick -->
+                    <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'start');">▶ Start</button>
+                    <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'stop');">⏹ Stop</button>
+                    <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'restart');">🔄 Restart</button>
             
                     <span class="separator"></span>
 

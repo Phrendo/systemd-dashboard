@@ -18,18 +18,6 @@ def get_service_status(service_name):
     except Exception as e:
         return "error"
 
-# @app.route("/")
-# def index():
-#     """Render the main dashboard."""
-#     services = Service.query.all()
-#     for service in services:
-#         process = subprocess.Popen([
-#             "journalctl", "-u", service.name, "--no-pager", "--output=short-iso", "-n", "10"
-#         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-#         logs, _ = process.communicate()
-#         service.logs = logs.strip()
-#     return render_template("index.html", services=services)
-
 @app.route("/")
 def index():
     """Render the main dashboard with preloaded logs."""
@@ -86,6 +74,25 @@ def delete_service(service_id):
     db.session.delete(service)
     db.session.commit()
     return jsonify({"success": True})
+
+# New route to handle start, stop, and restart actions:
+@app.route("/service/<service_name>/<action>", methods=["POST"])
+def service_action(service_name, action):
+    """Perform a systemctl action on the service (start, stop, or restart)."""
+    valid_actions = ["start", "stop", "restart"]
+    if action not in valid_actions:
+        return jsonify({"error": "Invalid action"}), 400
+    try:
+        subprocess.run(["systemctl", action, service_name], check=True)
+        updated_status = get_service_status(service_name)
+        # Optionally update status in the database:
+        service = Service.query.filter_by(name=service_name).first()
+        if service:
+            service.status = updated_status
+            db.session.commit()
+        return jsonify({"success": True, "status": updated_status})
+    except subprocess.CalledProcessError:
+        return jsonify({"success": False, "error": f"Failed to {action} service {service_name}"}), 500
 
 if __name__ == "__main__":
     with app.app_context():
