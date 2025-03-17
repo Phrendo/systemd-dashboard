@@ -83,7 +83,8 @@ def service_action(service_name, action):
     if action not in valid_actions:
         return jsonify({"error": "Invalid action"}), 400
     try:
-        subprocess.run(["systemctl", action, service_name], check=True)
+        #subprocess.run(["systemctl", action, service_name], check=True)
+        subprocess.run(["sudo", "systemctl", action, service_name], check=True)
         updated_status = get_service_status(service_name)
         # Optionally update status in the database:
         service = Service.query.filter_by(name=service_name).first()
