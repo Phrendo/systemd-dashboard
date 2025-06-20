@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Dashboard</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background-color: #080a0c;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1;
+            width: 100%;
+        }
+
+        .active {
+            color: green;
+        }
+
+        .inactive {
+            color: red;
+        }
+
+        .log-container {
+            width: 95%;
+            margin: 10px auto;
+            text-align: left;
+        }
+
+        .log-title {
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #222;
+            padding: 10px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .log-title button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .log-title button:hover {
+            background-color: #555;
+        }
+
+        .log-output {
+            width: 100%;
+            height: 250px;
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            white-space: pre-wrap;
+            padding: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 0 0 5px 5px;
+            scrollbar-width: thin;
+        }
+
+        .refresh-button {
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .refresh-button.paused {
+            background-color: orange;
+        }
+
+        .manage-services {
+            display: inline-block;
+            padding: 10px;
+            background-color: #444;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px;
+        }
+
+        .manage-services:hover {
+            background-color: #555;
+        }
+    </style>
+
+    <script>
+        function toggleLog(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            var isCollapsed = logElement.style.display === "none";
+            logElement.style.display = isCollapsed ? "block" : "none";
+            localStorage.setItem("log-collapsed-" + serviceName, isCollapsed ? "open" : "closed");
+        }
+
+        function toggleAutoRefresh(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            var refreshButton = document.getElementById("refresh-button-" + serviceName);
+            var isEnabled = logElement.getAttribute("data-refresh-enabled") === "true";
+
+            if (isEnabled) {
+                logElement.setAttribute("data-refresh-enabled", "false");
+                refreshButton.textContent = "▶ Resume";
+                refreshButton.classList.add("paused");
+            } else {
+                logElement.setAttribute("data-refresh-enabled", "true");
+                refreshButton.textContent = "⏸ Pause";
+                refreshButton.classList.remove("paused");
+                htmx.trigger(logElement, "custom-log-update");
+            }
+
+            localStorage.setItem("log-refresh-" + serviceName, isEnabled ? "disabled" : "enabled");
+        }
+
+        function autoScrollLog(serviceName) {
+            var logElement = document.getElementById("log-output-" + serviceName);
+            requestAnimationFrame(() => {
+                logElement.scrollTop = logElement.scrollHeight;
+            });
+        }
+
+        function updateLogs() {
+            document.querySelectorAll(".log-output").forEach(logElement => {
+                if (logElement.getAttribute("data-refresh-enabled") === "true") {
+                    htmx.trigger(logElement, "custom-log-update");
+                }
+            });
+        }
+
+        function serviceAction(serviceName, action) {
+            fetch(`/service/${serviceName}/${action}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const statusElem = document.getElementById("service-status-" + serviceName);
+                    if (data.status === "active") {
+                        statusElem.classList.remove("inactive");
+                        statusElem.classList.add("active");
+                    } else {
+                        statusElem.classList.remove("active");
+                        statusElem.classList.add("inactive");
+                    }
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error performing action: " + err);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for service in services %}
+                var logElement = document.getElementById("log-output-{{ service.name }}");
+                var refreshButton = document.getElementById("refresh-button-{{ service.name }}");
+                var savedState = localStorage.getItem("log-collapsed-{{ service.name }}");
+                var savedRefreshState = localStorage.getItem("log-refresh-{{ service.name }}");
+
+                if (savedState === "closed") {
+                    logElement.style.display = "none";
+                }
+
+                if (savedRefreshState === "disabled") {
+                    logElement.setAttribute("data-refresh-enabled", "false");
+                    refreshButton.textContent = "▶ Resume";
+                    refreshButton.classList.add("paused");
+                } else {
+                    logElement.setAttribute("data-refresh-enabled", "true");
+                    refreshButton.textContent = "⏸ Pause";
+                    refreshButton.classList.remove("paused");
+                }
+            {% endfor %}
+        });
+
+        setInterval(updateLogs, 5000);
+    </script>
+
+</head>
+<body>
+
+    <a href="/manage_services" class="manage-services">⚙️ Manage Services</a>
+
+    <div class="main-content">
+        {% for service in services %}
+            <div class="log-container">
+                <div class="log-title" onclick="toggleLog('{{ service.name }}')">
+                    <span id="service-status-{{ service.name }}" class="{% if service.status == 'active' %}active{% else %}inactive{% endif %}">
+                        {{ service.name }}
+                    </span>
+
+                    <div class="button-container">
+                        <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'start');">▶ Start</button>
+                        <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'stop');">⏹ Stop</button>
+                        <button onclick="event.stopPropagation(); serviceAction('{{ service.name }}', 'restart');">🔄 Restart</button>
+                        <span class="separator"></span>
+                        <button onclick="window.open('/logs/{{ service.name }}', '_blank'); event.stopPropagation();">🖼️ Pop Out</button>
+                        <button id="refresh-button-{{ service.name }}" class="refresh-button" onclick="toggleAutoRefresh('{{ service.name }}'); event.stopPropagation();">⏸ Pause</button>
+                    </div>
+                </div>
+
+                <pre id="log-output-{{ service.name }}" class="log-output"
+                     hx-get="/logs/{{ service.name }}"
+                     hx-trigger="load, custom-log-update"
+                     hx-target="#log-output-{{ service.name }}"
+                     hx-swap="innerHTML"
+                     hx-on::after-settle="autoScrollLog('{{ service.name }}')">
+                </pre>
+            </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Services</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .delete-btn {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Manage Services</h2>
+    
+    <form id="addServiceForm">
+        <label for="serviceName">Service Name:</label>
+        <input type="text" id="serviceName" required>
+        <button type="submit">Add Service</button>
+    </form>
+
+    <h3>Existing Services</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="serviceList">
+            {% for service in services %}
+                <tr data-id="{{ service.id }}">
+                    <td>{{ service.name }}</td>
+                    <td><span class="delete-btn" onclick="deleteService({{ service.id }})">Delete</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <a href="/">Back to Dashboard</a>
+
+    <script>
+        $(document).ready(function() {
+            $("#addServiceForm").submit(function(event) {
+                event.preventDefault();
+                let serviceName = $("#serviceName").val().trim();
+                
+                if (serviceName === "") {
+                    alert("Service name cannot be empty.");
+                    return;
+                }
+
+                $.ajax({
+                    url: "/add_service",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ name: serviceName }),
+                    success: function(response) {
+                        if (response.success) {
+                            let newRow = `<tr data-id="${response.id}">
+                                <td>${response.name}</td>
+                                <td><span class="delete-btn" onclick="deleteService(${response.id})">Delete</span></td>
+                            </tr>`;
+                            $("#serviceList").append(newRow);
+                            $("#serviceName").val("");  // Clear input field
+                        } else {
+                            alert(response.error);
+                        }
+                    }
+                });
+            });
+        });
+
+        function deleteService(serviceId) {
+            if (!confirm("Are you sure you want to delete this service?")) return;
+
+            $.ajax({
+                url: `/delete_service/${serviceId}`,
+                type: "DELETE",
+                success: function(response) {
+                    if (response.success) {
+                        $(`tr[data-id='${serviceId}']`).remove();
+                    } else {
+                        alert(response.error);
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
