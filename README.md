@@ -3,6 +3,11 @@
 ## Description
 A Flask-based web dashboard for monitoring and managing systemd services. This application provides a simple web interface to view service statuses, read logs, and perform basic service operations (start, stop, restart).
 
+![Full Screen](https://github.com/Phrendo/systemd-web-dash-boards/static/DASH_01.jpg?raw=true)
+
+![Log Accordion View](https://github.com/Phrendo/systemd-web-dash-boards/static/DASH_02.jpg?raw=true)
+
+
 ## Features
 - Real-time service status monitoring
 - Live log viewing with auto-refresh
